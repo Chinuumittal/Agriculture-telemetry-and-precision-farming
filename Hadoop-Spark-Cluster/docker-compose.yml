@@ -1,0 +1,228 @@
+
+services:
+
+  # =====================================
+  # HADOOP MASTER
+  # =====================================
+  master:
+    image: apache/hadoop:3.3.6
+    container_name: master
+    hostname: master
+    user: root
+
+    environment:
+      HADOOP_HOME: /opt/hadoop
+      HADOOP_MAPRED_HOME: /opt/hadoop
+
+    ports:
+      - "9870:9870"
+      - "8088:8088"
+      - "9000:9000"
+
+    volumes:
+      - ./config:/opt/hadoop/etc/hadoop
+      - namenode_data:/hadoop/dfs/name
+
+    command: >
+      bash -c "
+      mkdir -p /hadoop/dfs/name &&
+      if [ ! -f /hadoop/dfs/name/current/VERSION ]; then
+        hdfs namenode -format -force;
+      fi &&
+      hdfs namenode &
+      yarn resourcemanager &
+      tail -f /dev/null
+      "
+
+    networks:
+      - bds-network
+
+
+  # =====================================
+  # HADOOP WORKER 1
+  # =====================================
+  worker1:
+    image: apache/hadoop:3.3.6
+    container_name: worker1
+    hostname: worker1
+    user: root
+
+    environment:
+      HADOOP_HOME: /opt/hadoop
+      HADOOP_MAPRED_HOME: /opt/hadoop
+
+    volumes:
+      - ./config:/opt/hadoop/etc/hadoop
+      - worker1_data:/hadoop/dfs/data
+
+    command: >
+      bash -c "
+      mkdir -p /hadoop/dfs/data &&
+      hdfs datanode &
+      yarn nodemanager
+      "
+
+    depends_on:
+      - master
+
+    networks:
+      - bds-network
+
+
+  # =====================================
+  # HADOOP WORKER 2
+  # =====================================
+  worker2:
+    image: apache/hadoop:3.3.6
+    container_name: worker2
+    hostname: worker2
+    user: root
+
+    environment:
+      HADOOP_HOME: /opt/hadoop
+      HADOOP_MAPRED_HOME: /opt/hadoop
+
+    volumes:
+      - ./config:/opt/hadoop/etc/hadoop
+      - worker2_data:/hadoop/dfs/data
+
+    command: >
+      bash -c "
+      mkdir -p /hadoop/dfs/data &&
+      hdfs datanode &
+      yarn nodemanager
+      "
+
+    depends_on:
+      - master
+
+    networks:
+      - bds-network
+
+
+  # =====================================
+  # SPARK MASTER
+  # =====================================
+  spark-master:
+    image: apache/spark:3.5.7
+    container_name: spark-master
+    hostname: spark-master
+
+    environment:
+      SPARK_MASTER_HOST: spark-master
+      SPARK_MASTER_PORT: "7077"
+      SPARK_MASTER_WEBUI_PORT: "8080"
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+
+    volumes:
+      - ./config:/opt/hadoop/etc/hadoop:ro
+
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.master.Master
+      - --host
+      - spark-master
+      - --port
+      - "7077"
+      - --webui-port
+      - "8080"
+
+    networks:
+      - bds-network
+
+
+  # =====================================
+  # SPARK WORKER 1
+  # =====================================
+  spark-worker1:
+    image: apache/spark:3.5.7
+    container_name: spark-worker1
+    hostname: spark-worker1
+
+    environment:
+      SPARK_WORKER_WEBUI_PORT: "8081"
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+
+    ports:
+      - "8081:8081"
+
+    volumes:
+      - ./config:/opt/hadoop/etc/hadoop:ro
+
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.worker.Worker
+      - --host
+      - spark-worker1
+      - --webui-port
+      - "8081"
+      - --cores
+      - "2"
+      - --memory
+      - "1g"
+      - spark://spark-master:7077
+
+    depends_on:
+      - spark-master
+
+    networks:
+      - bds-network
+
+
+  # =====================================
+  # SPARK WORKER 2
+  # =====================================
+  spark-worker2:
+    image: apache/spark:3.5.7
+    container_name: spark-worker2
+    hostname: spark-worker2
+
+    environment:
+      SPARK_WORKER_WEBUI_PORT: "8081"
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+
+    ports:
+      - "8082:8081"
+
+    volumes:
+      - ./config:/opt/hadoop/etc/hadoop:ro
+
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.worker.Worker
+      - --host
+      - spark-worker2
+      - --webui-port
+      - "8081"
+      - --cores
+      - "2"
+      - --memory
+      - "1g"
+      - spark://spark-master:7077
+
+    depends_on:
+      - spark-master
+
+    networks:
+      - bds-network
+
+
+# =====================================
+# SHARED NETWORK
+# =====================================
+networks:
+  bds-network:
+    driver: bridge
+
+
+# =====================================
+# PERSISTENT HDFS VOLUMES
+# =====================================
+volumes:
+  namenode_data:
+  worker1_data:
+  worker2_data:

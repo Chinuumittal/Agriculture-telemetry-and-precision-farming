@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<configuration>
+
+    <!-- Run MapReduce on YARN -->
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+
+    <!-- Complete classpath required by MapReduce ApplicationMaster -->
+    <property>
+        <name>mapreduce.application.classpath</name>
+        <value>
+            /opt/hadoop/etc/hadoop,
+            /opt/hadoop/share/hadoop/common/*,
+            /opt/hadoop/share/hadoop/common/lib/*,
+            /opt/hadoop/share/hadoop/hdfs/*,
+            /opt/hadoop/share/hadoop/hdfs/lib/*,
+            /opt/hadoop/share/hadoop/mapreduce/*,
+            /opt/hadoop/share/hadoop/mapreduce/lib/*,
+            /opt/hadoop/share/hadoop/yarn/*,
+            /opt/hadoop/share/hadoop/yarn/lib/*
+        </value>
+    </property>
+
+    <!-- MapReduce ApplicationMaster environment -->
+    <property>
+        <name>yarn.app.mapreduce.am.env</name>
+        <value>HADOOP_HOME=/opt/hadoop,HADOOP_MAPRED_HOME=/opt/hadoop</value>
+    </property>
+
+    <!-- Map environment -->
+    <property>
+        <name>mapreduce.map.env</name>
+        <value>HADOOP_HOME=/opt/hadoop,HADOOP_MAPRED_HOME=/opt/hadoop</value>
+    </property>
+
+    <!-- Reduce environment -->
+    <property>
+        <name>mapreduce.reduce.env</name>
+        <value>HADOOP_HOME=/opt/hadoop,HADOOP_MAPRED_HOME=/opt/hadoop</value>
+    </property>
+
+</configuration>
