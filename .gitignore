@@ -1,0 +1,22 @@
+# Large datasets
+*.csv
+*.zip
+*.parquet
+*.xlsx
+
+# Generated outputs
+visualizations/
+agriculture_dashboard_output/
+output/
+logs/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
