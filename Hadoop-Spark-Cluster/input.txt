@@ -1,0 +1,5 @@
+Hello Hadoop
+Hello Big Data
+Hadoop is distributed
+Big Data is powerful
+Hadoop Hadoop Hadoop
