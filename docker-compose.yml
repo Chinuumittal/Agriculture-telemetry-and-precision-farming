@@ -211,6 +211,25 @@ services:
       - bds-network
 
 
+  # =====================================
+  # MONGODB - PROCESSED AGRICULTURE DATA
+  # =====================================
+  mongodb:
+    image: mongo:7
+    container_name: agriculture-mongodb
+    hostname: mongodb
+    restart: unless-stopped
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongodb_data:/data/db
+
+    networks:
+      - bds-network
+
+
 # =====================================
 # SHARED NETWORK
 # =====================================
@@ -220,9 +239,10 @@ networks:
 
 
 # =====================================
-# PERSISTENT HDFS VOLUMES
+# PERSISTENT VOLUMES
 # =====================================
 volumes:
   namenode_data:
   worker1_data:
   worker2_data:
+  mongodb_data:
